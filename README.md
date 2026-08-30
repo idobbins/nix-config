@@ -10,6 +10,8 @@ Manager.
 - nix-darwin owns system packages and copies managed GUI applications into
   `/Applications/Nix Apps`.
 - Home Manager owns user CLI packages and shell configuration.
+- Home Manager registers Ghostty as the default macOS terminal handler for
+  Unix executables and enables its Zsh integration.
 - Apple owns the Xcode Command Line Tools and macOS SDK. Verify the bootstrap
   dependency with `xcode-select -p` and update it through Software Update.
 - Secrets, SSH private keys, 1Password data, Chrome profiles, and Codex state
@@ -43,3 +45,9 @@ sudo ./result/activate
 
 The GitHub SSH key is stored at `~/.ssh/id_ed25519_github`; only its `.pub`
 file is safe to upload or share.
+
+## Sudo authentication
+
+`sudo` uses Touch ID and caches authentication once per parent shell until
+that shell exits. Run `sudo -k` to revoke the current shell's cached
+credential early.

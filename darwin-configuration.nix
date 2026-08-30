@@ -22,15 +22,23 @@
   # /Applications/Nix Apps so Spotlight and Launch Services can see them.
   environment.systemPackages = with pkgs; [
     _1password-gui
+    ghostty-bin
     google-chrome
   ];
 
   programs.zsh.enable = true;
 
-  # macOS 26 protects this PAM path from replacement even by an elevated
-  # graphical process. Leave it under Apple's ownership; we are not enabling
-  # Touch ID or Apple Watch authentication for sudo here.
-  security.pam.services.sudo_local.enable = false;
+  security.pam.services.sudo_local = {
+    enable = true;
+    touchIdAuth = true;
+  };
+
+  # Authenticate once per parent shell, then retain that credential until the
+  # shell exits. Run `sudo -k` to revoke it early.
+  security.sudo.extraConfig = ''
+    Defaults timestamp_type=ppid
+    Defaults timestamp_timeout=-1
+  '';
 
   home-manager = {
     useGlobalPkgs = true;
