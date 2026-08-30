@@ -24,8 +24,8 @@ in
   # the rest of the macOS system configuration around it.
   determinateNix.enable = true;
 
-  # Amp releases frequently and can lag substantially in stable Nixpkgs.
-  # Override only this package from the separately pinned unstable input.
+  # Amp releases faster than even unstable Nixpkgs. Keep its packaging recipe
+  # from unstable, but pin the exact latest upstream macOS ARM release.
   nixpkgs.overlays = [
     (_final: prev:
       let
@@ -35,7 +35,13 @@ in
         };
       in
       {
-        amp-cli = unstablePkgs.amp-cli;
+        amp-cli = unstablePkgs.amp-cli.overrideAttrs (_old: rec {
+          version = "0.0.1788062443-gbd1430";
+          src = prev.fetchurl {
+            url = "https://static.ampcode.com/cli/${version}/amp-darwin-arm64.gz";
+            hash = "sha256-XC7XrpGJDtF16SMcXueV3vriU64eSNG9VvMbW/+BTDc=";
+          };
+        });
       })
   ];
 
