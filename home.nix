@@ -22,6 +22,7 @@
     package = null;
     enableZshIntegration = true;
     settings.auto-update = "off";
+    settings.macos-titlebar-style = "tabs";
   };
 
   programs.ssh = {
