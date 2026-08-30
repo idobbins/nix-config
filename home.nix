@@ -54,6 +54,17 @@
     '';
   };
 
+  # Keep repositories grouped by the identity or organization they belong to.
+  # These mutable directories are created during activation rather than linked
+  # into the immutable Nix store.
+  home.activation.createDevDirectories = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    run mkdir -p \
+      "$HOME/dev/self" \
+      "$HOME/dev/fundlaunch" \
+      "$HOME/dev/notoil" \
+      "$HOME/dev/donkey"
+  '';
+
   # Ghostty itself defines the macOS default terminal as the handler for
   # public.unix-executable. Re-apply that LaunchServices association whenever
   # Home Manager activates so it remains part of the declarative setup.
