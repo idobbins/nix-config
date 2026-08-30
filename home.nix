@@ -21,6 +21,7 @@
     # The signed macOS application is installed system-wide by nix-darwin.
     package = null;
     enableZshIntegration = true;
+    settings.auto-update = "off";
   };
 
   programs.ssh = {

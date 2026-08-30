@@ -26,6 +26,12 @@
     google-chrome
   ];
 
+  # Codex is updated through this flake, so suppress its independent startup
+  # update check without taking ownership of the user's mutable config.toml.
+  environment.etc."codex/requirements.toml".text = ''
+    check_for_update_on_startup = false
+  '';
+
   programs.zsh.enable = true;
 
   security.pam.services.sudo_local = {
