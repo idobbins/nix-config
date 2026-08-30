@@ -1,5 +1,24 @@
 { lib, pkgs, ... }:
 
+let
+  chromeUpdatePolicy = pkgs.writeText "com.google.Keystone.plist" ''
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+      <key>updatePolicies</key>
+      <dict>
+        <key>com.google.Chrome</key>
+        <dict>
+          <key>UpdateDefault</key>
+          <integer>3</integer>
+        </dict>
+      </dict>
+    </dict>
+    </plist>
+  '';
+in
+
 {
   # Determinate continues to own and update Nix itself. nix-darwin manages
   # the rest of the macOS system configuration around it.
@@ -30,6 +49,15 @@
   # update check without taking ownership of the user's mutable config.toml.
   environment.etc."codex/requirements.toml".text = ''
     check_for_update_on_startup = false
+  '';
+
+  # Google documents UpdateDefault = 3 as disabling both automatic and
+  # user-initiated Chrome application updates. Browser component updates are
+  # intentionally left enabled because Nix does not package that mutable data.
+  system.activationScripts.postActivation.text = ''
+    ${pkgs.coreutils}/bin/install -d -m 0755 '/Library/Managed Preferences'
+    ${pkgs.coreutils}/bin/install -m 0644 ${chromeUpdatePolicy} \
+      '/Library/Managed Preferences/com.google.Keystone.plist'
   '';
 
   programs.zsh.enable = true;
