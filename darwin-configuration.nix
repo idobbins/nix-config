@@ -27,6 +27,8 @@ in
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
       "1password"
+      "amp-cli"
+      "claude-code"
       "google-chrome"
     ];
 
