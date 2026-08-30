@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ inputs, lib, pkgs, ... }:
 
 let
   chromeUpdatePolicy = pkgs.writeText "com.google.Keystone.plist" ''
@@ -23,6 +23,21 @@ in
   # Determinate continues to own and update Nix itself. nix-darwin manages
   # the rest of the macOS system configuration around it.
   determinateNix.enable = true;
+
+  # Amp releases frequently and can lag substantially in stable Nixpkgs.
+  # Override only this package from the separately pinned unstable input.
+  nixpkgs.overlays = [
+    (_final: prev:
+      let
+        unstablePkgs = import inputs.nixpkgs-unstable {
+          system = prev.stdenv.hostPlatform.system;
+          config.allowUnfreePredicate = pkg: lib.getName pkg == "amp-cli";
+        };
+      in
+      {
+        amp-cli = unstablePkgs.amp-cli;
+      })
+  ];
 
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
