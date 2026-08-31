@@ -9,7 +9,9 @@ Manager.
   collection, and `/etc/nix/nix.conf`.
 - nix-darwin owns system packages and copies managed GUI applications into
   `/Applications/Nix Apps`.
-- Home Manager owns user CLI packages and shell configuration.
+- Home Manager owns user CLI packages, shell configuration, and Neovim.
+- Neovim plugins, Tree-sitter parsers, and language servers come from the
+  pinned Nixpkgs revision; Neovim does not download them at runtime.
 - Home Manager registers Ghostty as the default macOS terminal handler for
   Unix executables and enables its Zsh integration.
 - Apple owns the Xcode Command Line Tools and macOS SDK. Verify the bootstrap
@@ -45,6 +47,14 @@ sudo ./result/activate
 
 The GitHub SSH key is stored at `~/.ssh/id_ed25519_github`; only its `.pub`
 file is safe to upload or share.
+
+## Neovim
+
+Home Manager installs Neovim, configures Ayu Light, and sets `nvim` as
+`EDITOR` and `VISUAL`. Plugins, selected Tree-sitter parsers, FFF's native
+library, and language servers are built as part of the system closure. Update
+them through the normal flake update and activation workflow rather than
+`:Lazy`, `:Mason`, or `:TSUpdate`.
 
 ## Sudo authentication
 

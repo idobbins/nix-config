@@ -110,7 +110,6 @@ in
             platforms = lib.platforms.darwin;
           };
         };
-        herdr = unstablePkgs.herdr;
         pi-coding-agent = unstablePkgs.pi-coding-agent;
         zed-editor = unstablePkgs.zed-editor;
       })
@@ -140,7 +139,6 @@ in
     ampcode
     ghostty-bin
     google-chrome
-    herdr
     zed-editor
   ];
 

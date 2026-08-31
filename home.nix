@@ -25,6 +25,7 @@ in
 {
   imports = [
     ./modules/dev-profiles.nix
+    ./modules/neovim.nix
     ./profiles/hades.nix
   ];
 
@@ -51,6 +52,16 @@ in
   programs.git = {
     enable = true;
     settings.init.defaultBranch = "main";
+    settings.user.name = "Isaac Dobbins";
+    settings.user.email = "isaac.dobbins@icloud.com";
+
+    # FundLaunch repositories commit under the work identity.
+    includes = [
+      {
+        condition = "gitdir:~/dev/fundlaunch/";
+        contents.user.email = "isaac@fundlaunch.com";
+      }
+    ];
   };
 
   programs.ghostty = {
@@ -62,26 +73,6 @@ in
     settings.macos-titlebar-style = "tabs";
     settings.theme = "Ayu Light";
   };
-
-  # Herdr defaults to its own dark Catppuccin theme. The terminal theme uses
-  # Ghostty's active ANSI palette, while explicit Ayu Light surfaces avoid the
-  # dark, low-contrast selection colors derived from the ANSI gray slots.
-  xdg.configFile."herdr/config.toml".text = ''
-    [theme]
-    name = "terminal"
-
-    [theme.custom]
-    panel_bg = "reset"
-    sidebar_bg = "#f8f9fa"
-    active_row_bg = "#e8edf2"
-    selection_bg = "#dce9f8"
-    surface0 = "#f3f4f5"
-    surface1 = "#e7e8e9"
-    surface_dim = "#d1d1d1"
-
-    [experimental]
-    kitty_graphics = true
-  '';
 
   programs.ssh = {
     enable = true;
