@@ -24,8 +24,46 @@ in
   # the rest of the macOS system configuration around it.
   determinateNix.enable = true;
 
-  # Amp releases faster than even unstable Nixpkgs. Keep its packaging recipe
-  # from unstable, but pin the exact latest upstream macOS ARM release.
+  # Nix remains the primary package manager. Homebrew exists only as a
+  # compatibility backend for software that is unavailable through Nix.
+  nix-homebrew = {
+    enable = true;
+    user = "idobbins";
+    enableRosetta = false;
+    mutableTaps = true;
+  };
+
+  # CleanShot X is sold directly rather than through the Mac App Store and is
+  # not packaged by nixpkgs. Keep Homebrew deliberately limited to this cask.
+  homebrew = {
+    enable = true;
+    casks = [ "cleanshot" ];
+    # CleanShot's updater respects the update period attached to its license;
+    # do not let Homebrew force-install a newer, potentially unlicensed build.
+    global.autoUpdate = false;
+    onActivation = {
+      autoUpdate = false;
+      upgrade = false;
+      cleanup = "uninstall";
+      extraEnv.HOMEBREW_NO_ANALYTICS = "1";
+    };
+  };
+  environment.variables.HOMEBREW_NO_ANALYTICS = "1";
+
+  # Install the CLI at /usr/local/bin/op, the location required by the
+  # 1Password desktop application's biometric CLI integration.
+  programs._1password.enable = true;
+
+  # The app bundle is immutable in the Nix store, so let Nix own its updates
+  # instead of having Sparkle check hourly for an update it cannot install.
+  system.defaults.CustomUserPreferences."com.ampcode.amp.macos" = {
+    SUEnableAutomaticChecks = false;
+    SUAutomaticallyUpdate = false;
+  };
+
+  # Fast-moving developer tools track the separately pinned unstable channel.
+  # Amp releases faster than even unstable Nixpkgs, so keep its packaging
+  # recipe from unstable while pinning the exact upstream macOS ARM release.
   nixpkgs.overlays = [
     (_final: prev:
       let
@@ -42,13 +80,48 @@ in
             hash = "sha256-XC7XrpGJDtF16SMcXueV3vriU64eSNG9VvMbW/+BTDc=";
           };
         });
+        ampcode = prev.stdenvNoCC.mkDerivation {
+          pname = "ampcode";
+          version = "1.0.176";
+
+          src = prev.fetchurl {
+            name = "amp.dmg";
+            # Pin the Google Cloud Storage object generation because
+            # latest.dmg is replaced in place for every app release.
+            url = "https://static.ampcode.com/mac/latest.dmg?generation=1788178819144821";
+            hash = "sha256-PnGSDvGDtscBDyZcmgBF9TDyK4aN80qk/+26orqmkT8=";
+          };
+
+          sourceRoot = ".";
+          nativeBuildInputs = [ prev._7zz ];
+
+          installPhase = ''
+            runHook preInstall
+            mkdir -p "$out/Applications"
+            cp -a Amp.app "$out/Applications/"
+            runHook postInstall
+          '';
+
+          meta = {
+            description = "Native macOS app for the Amp coding agent";
+            homepage = "https://ampcode.com/app";
+            license = lib.licenses.unfree;
+            sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+            platforms = lib.platforms.darwin;
+          };
+        };
+        herdr = unstablePkgs.herdr;
+        pi-coding-agent = unstablePkgs.pi-coding-agent;
+        zed-editor = unstablePkgs.zed-editor;
       })
   ];
 
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
       "1password"
+      "1password-cli"
       "amp-cli"
+      "ampcode"
       "claude-code"
       "google-chrome"
     ];
@@ -64,8 +137,11 @@ in
   # /Applications/Nix Apps so Spotlight and Launch Services can see them.
   environment.systemPackages = with pkgs; [
     _1password-gui
+    ampcode
     ghostty-bin
     google-chrome
+    herdr
+    zed-editor
   ];
 
   # Codex is updated through this flake, so suppress its independent startup
