@@ -5,6 +5,10 @@
   # account-linked local Convex deployment so the project's dev defaults are
   # imported. The credentials are resolved by direnv at runtime, not by Nix.
   devProfiles.hades = {
+    # Share one approval across direnv evaluations for 30 minutes. The resolved
+    # values live only in the user's mode-0600 XDG cache, never in the Nix store.
+    cacheTtlSeconds = 30 * 60;
+
     requiredVariables = [
       "CONVEX_OVERRIDE_ACCESS_TOKEN"
       "VERCEL_TOKEN"

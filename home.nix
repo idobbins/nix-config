@@ -14,6 +14,7 @@ let
     packages = [
       "npm:pi-web-search@1.3.1"
       "npm:pi-claude-bridge@0.7.0"
+      "npm:pi-mcp-adapter@2.31.0"
     ];
   });
 
@@ -35,12 +36,21 @@ in
   home.packages = with pkgs; [
     _1password-cli
     amp-cli
+    cargo
     claude-code
+    clippy
     codex
     duti
     gh
     pi-coding-agent
+    rust-analyzer
+    rustc
+    rustfmt
   ];
+
+  # Make the standard library sources available to Rust tooling such as
+  # rust-analyzer while keeping the complete toolchain pinned by this flake.
+  home.sessionVariables.RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
 
   programs.home-manager.enable = true;
 
