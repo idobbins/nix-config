@@ -125,14 +125,14 @@ in
         };
         delta-app = prev.stdenvNoCC.mkDerivation {
           pname = "delta-app";
-          version = "0.1.0";
+          version = "0.6.0";
 
           # Delta releases are restricted to authenticated early-access users,
           # so seed this exact archive into the Nix store rather than placing
           # account credentials or an expiring download URL in the flake.
           src = prev.requireFile {
             name = "Delta.app.zip";
-            hash = "sha256-8nAzTO+jXyakvPdSvWqnZ9SNkYU9UcNI0byCgsD35Mc=";
+            hash = "sha256-OT4qdGgCUK3QPDeckDaql6v3EQp4b0rJYUZ8Pu+AiKA=";
             url = "https://delta.dev/download";
           };
 
