@@ -85,24 +85,24 @@ in
       in
       {
         amp-cli = unstablePkgs.amp-cli.overrideAttrs (_old: rec {
-          version = "0.0.1788062443-gbd1430";
+          version = "0.0.1788436865-g512c6e";
           src = prev.fetchurl {
             url = "https://static.ampcode.com/cli/${version}/amp-darwin-arm64.gz";
-            hash = "sha256-XC7XrpGJDtF16SMcXueV3vriU64eSNG9VvMbW/+BTDc=";
+            hash = "sha256-6OswiBBeMs42cFQRNGvNH+hbuPkxHDuRH9YfmhIx5fo=";
           };
         });
         claude-code = unstablePkgs.claude-code;
         codex = unstablePkgs.codex;
         ampcode = prev.stdenvNoCC.mkDerivation {
           pname = "ampcode";
-          version = "1.0.176";
+          version = "1.0.235";
 
           src = prev.fetchurl {
             name = "amp.dmg";
             # Pin the Google Cloud Storage object generation because
             # latest.dmg is replaced in place for every app release.
-            url = "https://static.ampcode.com/mac/latest.dmg?generation=1788178819144821";
-            hash = "sha256-PnGSDvGDtscBDyZcmgBF9TDyK4aN80qk/+26orqmkT8=";
+            url = "https://static.ampcode.com/mac/latest.dmg?generation=1788433793333337";
+            hash = "sha256-3ySzh97Fe+LAybMb9RH/0nAjVJCHDNbrJ8ZxptEV04U=";
           };
 
           sourceRoot = ".";
@@ -156,12 +156,12 @@ in
         };
         t3code-nightly = prev.stdenvNoCC.mkDerivation rec {
           pname = "t3code-nightly";
-          version = "0.0.38-nightly.20260901.1246";
+          version = "0.0.39-nightly.20260903.1270";
 
           src = prev.fetchurl {
             name = "T3-Code-${version}-arm64.dmg";
             url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-arm64.dmg";
-            hash = "sha256-ViHQAqD6YGsXQ7tb09pNicZrSbgd3eYjCcSRHrp0kt8=";
+            hash = "sha256-Q+cbqhEGEJFkBdeVz3vGA+ZgXsfoMWF9y4DiXzMoCyo=";
           };
 
           sourceRoot = ".";
