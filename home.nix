@@ -61,6 +61,7 @@ in
 
   programs.git = {
     enable = true;
+    lfs.enable = true;
     settings.init.defaultBranch = "main";
     settings.user.name = "Isaac Dobbins";
     settings.user.email = "isaac.dobbins@icloud.com";

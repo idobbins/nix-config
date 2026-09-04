@@ -44,7 +44,10 @@ in
     ];
     # Install the purchased App Store build so its license stays associated
     # with the signed-in Apple Account.
-    masApps.Magnet = 441258766;
+    masApps = {
+      Magnet = 441258766;
+      Xcode = 497799835;
+    };
     # CleanShot's updater respects the update period attached to its license;
     # do not let Homebrew force-install a newer, potentially unlicensed build.
     global.autoUpdate = false;
@@ -79,6 +82,7 @@ in
           config.allowUnfreePredicate = pkg:
             builtins.elem (lib.getName pkg) [
               "amp-cli"
+              "chatgpt"
               "claude-code"
             ];
         };
@@ -91,6 +95,7 @@ in
             hash = "sha256-6OswiBBeMs42cFQRNGvNH+hbuPkxHDuRH9YfmhIx5fo=";
           };
         });
+        chatgpt = unstablePkgs.chatgpt;
         claude-code = unstablePkgs.claude-code;
         codex = unstablePkgs.codex;
         ampcode = prev.stdenvNoCC.mkDerivation {
@@ -121,37 +126,6 @@ in
             license = lib.licenses.unfree;
             sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
             platforms = lib.platforms.darwin;
-          };
-        };
-        delta-app = prev.stdenvNoCC.mkDerivation {
-          pname = "delta-app";
-          version = "0.6.0";
-
-          # Delta releases are restricted to authenticated early-access users,
-          # so seed this exact archive into the Nix store rather than placing
-          # account credentials or an expiring download URL in the flake.
-          src = prev.requireFile {
-            name = "Delta.app.zip";
-            hash = "sha256-OT4qdGgCUK3QPDeckDaql6v3EQp4b0rJYUZ8Pu+AiKA=";
-            url = "https://delta.dev/download";
-          };
-
-          sourceRoot = ".";
-          nativeBuildInputs = [ prev.unzip ];
-
-          installPhase = ''
-            runHook preInstall
-            mkdir -p "$out/Applications"
-            cp -a Delta.app "$out/Applications/"
-            runHook postInstall
-          '';
-
-          meta = {
-            description = "Collaborative agent workspace from Zed Industries";
-            homepage = "https://delta.dev";
-            license = lib.licenses.unfree;
-            sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
-            platforms = [ "aarch64-darwin" ];
           };
         };
         t3code-nightly = prev.stdenvNoCC.mkDerivation rec {
@@ -191,7 +165,36 @@ in
           };
         };
         pi-coding-agent = unstablePkgs.pi-coding-agent;
-        zed-editor = unstablePkgs.zed-editor;
+        zed-editor = prev.stdenvNoCC.mkDerivation {
+          pname = "zed-editor";
+          version = "1.18.0";
+
+          src = prev.fetchurl {
+            url = "https://github.com/zed-industries/zed/releases/download/v1.18.0/Zed-aarch64.dmg";
+            hash = "sha256-cjj0DTcHhTaoS5SXLkQcIssg00m53SityEXg3G7B1LQ=";
+          };
+
+          sourceRoot = ".";
+          nativeBuildInputs = [ prev._7zz ];
+
+          # Ignore HFS+ alternate streams: extracting them as colon-suffixed
+          # files would invalidate the app's code signature.
+          unpackPhase = ''
+            runHook preUnpack
+            7zz x -sns- "$src"
+            runHook postUnpack
+          '';
+
+          installPhase = ''
+            runHook preInstall
+            mkdir -p "$out/Applications" "$out/bin"
+            cp -a Zed.app "$out/Applications/"
+            ln -s ../Applications/Zed.app/Contents/MacOS/cli "$out/bin/zeditor"
+            runHook postInstall
+          '';
+
+          meta = unstablePkgs.zed-editor.meta;
+        };
       })
   ];
 
@@ -201,8 +204,8 @@ in
       "1password-cli"
       "amp-cli"
       "ampcode"
+      "chatgpt"
       "claude-code"
-      "delta-app"
       "google-chrome"
       "jetbrains-toolbox"
     ];
@@ -220,7 +223,7 @@ in
     _1password-gui
     ampcode
     brave
-    delta-app
+    chatgpt
     ghostty-bin
     google-chrome
     jetbrains-toolbox
