@@ -12,9 +12,9 @@ let
     theme = "light";
     npmCommand = [ "${pkgs.nodejs}/bin/npm" ];
     packages = [
-      "npm:pi-web-search@1.3.1"
+      "npm:pi-web-search@1.4.0"
       "npm:pi-claude-bridge@0.7.0"
-      "npm:pi-mcp-adapter@2.31.0"
+      "npm:pi-mcp-adapter@2.32.1"
     ];
   });
 
@@ -35,6 +35,7 @@ in
 
   home.packages = with pkgs; [
     _1password-cli
+    agent-browser
     amp-cli
     cargo
     claude-code
@@ -42,6 +43,8 @@ in
     codex
     duti
     gh
+    nodejs
+    (pkgs.callPackage ./packages/vercel-cli { })
     pi-coding-agent
     rust-analyzer
     rustc

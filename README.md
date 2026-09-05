@@ -9,7 +9,14 @@ Manager.
   collection, and `/etc/nix/nix.conf`.
 - nix-darwin owns system packages and copies managed GUI applications into
   `/Applications/Nix Apps`.
-- Home Manager owns user CLI packages, shell configuration, and Neovim.
+- Home Manager owns all global user CLI packages (including Node.js and
+  Vercel), shell configuration, and Neovim. Do not use `nix profile install`
+  or `npm install -g` for global tools; declare them in `home.nix` instead.
+- Vercel's package recipe and npm lock file live in `packages/vercel-cli/`
+  and use this flake's Nixpkgs input, not a separate flake or user profile.
+- Project-specific development shells stay in their project repositories.
+- Pi extension versions are pinned in `home.nix`; Pi downloads those
+  extensions into its runtime cache.
 - Neovim plugins, Tree-sitter parsers, and language servers come from the
   pinned Nixpkgs revision; Neovim does not download them at runtime.
 - Home Manager registers Ghostty as the default macOS terminal handler for

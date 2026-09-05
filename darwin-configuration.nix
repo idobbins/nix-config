@@ -89,25 +89,66 @@ in
       in
       {
         amp-cli = unstablePkgs.amp-cli.overrideAttrs (_old: rec {
-          version = "0.0.1788436865-g512c6e";
+          version = "0.0.1788624043-gf294bf";
           src = prev.fetchurl {
             url = "https://static.ampcode.com/cli/${version}/amp-darwin-arm64.gz";
-            hash = "sha256-6OswiBBeMs42cFQRNGvNH+hbuPkxHDuRH9YfmhIx5fo=";
+            hash = "sha256-jxXfMkIPExuvsKQosCCA45pYUKTtnlnKQBRWQRpMK2o=";
           };
         });
-        chatgpt = unstablePkgs.chatgpt;
-        claude-code = unstablePkgs.claude-code;
-        codex = unstablePkgs.codex;
+        chatgpt = unstablePkgs.chatgpt.overrideAttrs (_old: rec {
+          version = "26.901.41123";
+          src = prev.fetchurl {
+            url = "https://persistent.oaistatic.com/codex-app-prod/ChatGPT-darwin-arm64-${version}.zip";
+            hash = "sha256-8Nb8q26xxmrE+FhbxbVpJrLYdwDHt8wRRCnntUAZP9Y=";
+          };
+        });
+        claude-code = unstablePkgs.claude-code.override {
+          manifest = {
+            version = "2.1.261";
+            platforms.darwin-arm64 = {
+              binary = "claude.zst";
+              checksum = "c7960a08d4b6a683618a3e739b8338bffa98429fa7806cb3ae31652003e487d0";
+            };
+          };
+        };
+        codex = prev.stdenvNoCC.mkDerivation {
+          pname = "codex";
+          version = "0.153.4";
+
+          src = prev.fetchurl {
+            url = "https://github.com/openai/codex/releases/download/rust-v0.153.4/codex-package-aarch64-apple-darwin.tar.gz";
+            hash = "sha256-NUONofv3ptt92zvOyERI+mAVuhiEYUcql9nR2n2cQ1M=";
+          };
+
+          sourceRoot = ".";
+          dontStrip = true;
+          nativeBuildInputs = [ prev.installShellFiles ];
+
+          installPhase = ''
+            runHook preInstall
+            mkdir -p "$out"
+            cp -R bin codex-package.json codex-path codex-resources "$out/"
+            runHook postInstall
+          '';
+
+          postInstall = ''
+            installShellCompletion --cmd codex \
+              --bash <("$out/bin/codex" completion bash) \
+              --fish <("$out/bin/codex" completion fish) \
+              --zsh <("$out/bin/codex" completion zsh)
+          '';
+
+          meta = unstablePkgs.codex.meta;
+        };
         ampcode = prev.stdenvNoCC.mkDerivation {
           pname = "ampcode";
-          version = "1.0.235";
+          version = "1.0.265";
 
           src = prev.fetchurl {
             name = "amp.dmg";
-            # Pin the Google Cloud Storage object generation because
-            # latest.dmg is replaced in place for every app release.
-            url = "https://static.ampcode.com/mac/latest.dmg?generation=1788433793333337";
-            hash = "sha256-3ySzh97Fe+LAybMb9RH/0nAjVJCHDNbrJ8ZxptEV04U=";
+            # Use the immutable, versioned release rather than latest.dmg.
+            url = "https://static.ampcode.com/mac/Amp-1.0-265.dmg";
+            hash = "sha256-6Y77PPesp5+wO9F2sjTXuykohzheXKSsj+UIhRqDNTQ=";
           };
 
           sourceRoot = ".";
@@ -130,12 +171,12 @@ in
         };
         t3code-nightly = prev.stdenvNoCC.mkDerivation rec {
           pname = "t3code-nightly";
-          version = "0.0.39-nightly.20260903.1270";
+          version = "0.0.39-nightly.20260905.1288";
 
           src = prev.fetchurl {
             name = "T3-Code-${version}-arm64.dmg";
             url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-arm64.dmg";
-            hash = "sha256-Q+cbqhEGEJFkBdeVz3vGA+ZgXsfoMWF9y4DiXzMoCyo=";
+            hash = "sha256-0eqpMpyRSpoigpJhYYcguTwBGuljChbH5pCofkCRLiQ=";
           };
 
           sourceRoot = ".";
@@ -164,14 +205,40 @@ in
             platforms = [ "aarch64-darwin" ];
           };
         };
-        pi-coding-agent = unstablePkgs.pi-coding-agent;
+        pi-coding-agent = unstablePkgs.pi-coding-agent.overrideAttrs (_old: rec {
+          version = "0.85.1";
+          src = prev.fetchFromGitHub {
+            owner = "earendil-works";
+            repo = "pi";
+            tag = "v${version}";
+            hash = "sha256-gU8BSiqqOYt2RRuQONHHGvZeSM5KFQVrwif9bmuUXUc=";
+          };
+          # 0.85 adds the chord workspace as a build and runtime dependency.
+          buildPhase = builtins.replaceStrings
+            [ "npx tsgo -p packages/tui/tsconfig.build.json" ]
+            [ "npx tsgo -p packages/chord/tsconfig.build.json\n    npx tsgo -p packages/tui/tsconfig.build.json" ]
+            _old.buildPhase;
+          postInstall = builtins.replaceStrings
+            [ "for ws in @earendil-works/pi-ai:packages/ai" ]
+            [ "for ws in @earendil-works/chord:packages/chord @earendil-works/pi-ai:packages/ai" ]
+            _old.postInstall;
+          npmDeps = _old.npmDeps.overrideAttrs {
+            inherit src;
+            name = "pi-coding-agent-${version}-npm-deps";
+            outputHash = "sha256-jzlsZIQzfl1FCZZ5//dHFWwMfBZQ4nRD6KB4HHifPqE=";
+          };
+          modelData = prev.fetchurl {
+            url = "https://registry.npmjs.org/@earendil-works/pi-ai/-/pi-ai-${version}.tgz";
+            hash = "sha256-r30RmGF5RFzm/oizfVfeIvgjwP/TplyuMcVVt/XpklM=";
+          };
+        });
         zed-editor = prev.stdenvNoCC.mkDerivation {
           pname = "zed-editor";
-          version = "1.18.0";
+          version = "1.18.1";
 
           src = prev.fetchurl {
-            url = "https://github.com/zed-industries/zed/releases/download/v1.18.0/Zed-aarch64.dmg";
-            hash = "sha256-cjj0DTcHhTaoS5SXLkQcIssg00m53SityEXg3G7B1LQ=";
+            url = "https://github.com/zed-industries/zed/releases/download/v1.18.1/Zed-aarch64.dmg";
+            hash = "sha256-bEiPxp1ThxXLW6KpnUpFiX6ErKGCEaMFSSkcuQ5LZUY=";
           };
 
           sourceRoot = ".";
